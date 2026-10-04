@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>共享内存生命游戏</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <h1>共享内存生命游戏 <span class="dim">SharedArrayBuffer × 真实 Worker</span></h1>
+
+    <div id="fatal-banner" class="hidden">
+      <div>
+        <strong>当前环境不支持 SharedArrayBuffer 跨源隔离。</strong>
+        <p>
+          本应用需要 <code>Cross-Origin-Opener-Policy: same-origin</code> 与
+          <code>Cross-Origin-Embedder-Policy: require-corp</code>
+          两个响应头（<code>window.crossOriginIsolated === true</code>）。
+        </p>
+        <p>
+          不会偷偷退化成单线程：请用 <code>npm run dev</code> 或
+          <code>npm run preview</code> 启动（已配置隔离头），或在你自己的静态服务器上补齐这两个头后再打开。
+        </p>
+        <p id="fatal-reason"></p>
+      </div>
+    </div>
+
+    <main id="app" class="hidden">
+      <div class="layout">
+        <canvas id="board" width="640" height="640" title="暂停时点击/拖动可编辑活格"></canvas>
+        <aside class="panel">
+          <section>
+            <div class="stat">
+              <span>代号 generation</span>
+              <strong id="gen">0</strong>
+            </div>
+            <div class="stat">
+              <span>状态</span>
+              <strong id="phase">已暂停 · 已提交代</strong>
+            </div>
+            <div class="stat" id="fault-line" hidden>
+              <span>Worker 异常（已作废，已补员）</span>
+              <strong id="fault-text"></strong>
+            </div>
+          </section>
+
+          <section class="buttons">
+            <button id="btn-run">▶ 运行</button>
+            <button id="btn-step" disabled>⏭ 单步</button>
+            <button id="btn-pause" disabled>⏸ 暂停</button>
+            <button id="btn-reset">⟲ 重置</button>
+            <button id="btn-random">🎲 随机初值并重置</button>
+            <button id="btn-export">⬇ 导出当前代</button>
+            <button id="btn-fault">💥 注入 Worker 异常（演示）</button>
+          </section>
+
+          <section class="fields">
+            <label>
+              Worker 数（2～4）
+              <input id="workers" type="number" min="2" max="4" value="4" />
+            </label>
+            <label>
+              行（16～128）
+              <input id="rows" type="number" min="16" max="128" value="64" />
+            </label>
+            <label>
+              列（16～128）
+              <input id="cols" type="number" min="16" max="128" value="64" />
+            </label>
+            <label>
+              运行间隔（毫秒/代）
+              <input id="interval" type="number" min="0" step="10" value="120" />
+            </label>
+          </section>
+
+          <p class="hint">
+            规则：环面边界，读旧代八邻域——恰 3 个邻居存活/新生，恰 2 个保留原值，其余清零。
+            多线程只共享读旧代、各写各的新代行区，全员屏障后主线程才交换缓冲。
+            暂停时可在画布上点击/拖动编辑，导出永远取一份完整已提交代。
+          </p>
+        </aside>
+      </div>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
