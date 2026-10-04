@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>共享内存多线程生命游戏</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #0b0e14; color: #d7e0ea; display: flex; flex-direction: column;
+    align-items: center; min-height: 100vh;
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 16px 0 4px; }
+  .sub { color: #7f8b99; font-size: 12px; margin-bottom: 12px; }
+  #canvas {
+    width: min(88vw, 560px); height: min(88vw, 560px);
+    background: #10141e; border: 1px solid #232b38; border-radius: 6px;
+    image-rendering: pixelated;
+  }
+  .panel {
+    display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center;
+    margin: 12px 0; font-size: 13px; justify-content: center; max-width: 640px;
+  }
+  .panel label { display: flex; gap: 6px; align-items: center; color: #9fb0c3; }
+  input[type="number"] { width: 58px; }
+  input, select, button {
+    background: #161c28; color: #d7e0ea; border: 1px solid #2c3646;
+    border-radius: 4px; padding: 4px 8px; font-size: 13px;
+  }
+  button { cursor: pointer; min-width: 64px; }
+  button:hover:not(:disabled) { background: #1f2837; }
+  button:disabled { opacity: 0.45; cursor: default; }
+  #status, #workers-status {
+    font-family: ui-monospace, Consolas, monospace; font-size: 12px;
+    color: #8fd0a0; margin-top: 4px; text-align: center;
+  }
+  #workers-status { color: #6f7d8f; }
+  .note { color: #5d6a7a; font-size: 12px; max-width: 640px; margin: 10px 16px 24px; line-height: 1.7; }
+  #fatal {
+    display: none; position: fixed; inset: 0; z-index: 10;
+    background: rgba(8, 10, 14, 0.96); color: #ffb4b4;
+    align-items: center; justify-content: center; text-align: left;
+    font-size: 14px; line-height: 1.9; white-space: pre-wrap; padding: 8vw;
+  }
+</style>
+</head>
+<body>
+  <h1>生命游戏 · SharedArrayBuffer 多 Worker</h1>
+  <div class="sub">2–4 个真实 Worker 通过共享内存分担行区 · 主线程只调度不计算 · 只展示完整已提交代</div>
+  <canvas id="canvas" width="560" height="560"></canvas>
+  <div class="panel">
+    <button id="toggle">开始</button>
+    <button id="step">单步</button>
+    <button id="reset">重置</button>
+    <button id="export">导出 PNG</button>
+  </div>
+  <div class="panel">
+    <label>行 <input id="rows" type="number" value="64" /></label>
+    <label>列 <input id="cols" type="number" value="64" /></label>
+    <label>线程
+      <select id="workers">
+        <option>2</option>
+        <option selected>3</option>
+        <option>4</option>
+      </select>
+    </label>
+    <label>速度 <input id="speed" type="range" min="1" max="60" value="15" /> <span id="speed-label"></span></label>
+  </div>
+  <div id="status"></div>
+  <div id="workers-status"></div>
+  <div class="note">
+    说明：网格 16–128 行列、边界环绕；规则为「邻居恰三存活、恰二保留、其余清零」。
+    所有 Worker 只读同一旧代并写各自新代行区，完成屏障后主线程才交换缓冲并递增代数；
+    暂停 / 单步 / 重置 / 导出均只作用于完整已提交代。修改行、列或线程数后按「重置」生效。
+    本页面需要跨源隔离响应头（COOP/COEP）才能使用 SharedArrayBuffer；不支持时会明确提示，不会回退单线程。
+  </div>
+  <div id="fatal"></div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

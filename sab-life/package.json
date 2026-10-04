@@ -1,0 +1,15 @@
+{
+  "name": "sab-life",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SharedArrayBuffer 多 Worker 生命游戏（TypeScript + Canvas）",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node server.mjs",
+    "test": "npm run build && node --test test/"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
